@@ -14,9 +14,22 @@ export default function Call() {
   const [isSpeaking, setIsSpeaking] = React.useState(false);
   const canvasRef = React.useRef(null);
   const localVideoRef = React.useRef(null);
-  const activeProfile = getActiveVoiceProfile();
+  const [activeProfile, setActiveProfile] = React.useState(null);
+  const [dbError, setDbError] = React.useState("");
   const { speak, status, error, audioUrl } = useTTS();
   const virtualCamera = useVirtualCamera(canvasRef);
+
+  React.useEffect(() => {
+    async function loadActiveProfile() {
+      try {
+        const profile = await getActiveVoiceProfile();
+        setActiveProfile(profile);
+      } catch (err) {
+        setDbError(err.message);
+      }
+    }
+    loadActiveProfile();
+  }, []);
 
   const [isCalibrationOpen, setIsCalibrationOpen] = React.useState(false);
   const [calibration, setCalibration] = React.useState(() => {
@@ -89,7 +102,14 @@ export default function Call() {
         </div>
       </section>
 
-      {!activeProfile && (
+      {dbError && (
+        <div className="flex items-center gap-2 rounded-md border border-coral/40 bg-coral/10 p-4 text-sm font-semibold text-ink">
+          <CircleAlert size={18} aria-hidden="true" />
+          <span>Database Error: {dbError}. Please ensure IndexedDB is enabled and not blocked.</span>
+        </div>
+      )}
+
+      {!activeProfile && !dbError && (
         <div className="flex items-center gap-2 rounded-md border border-coral/40 bg-coral/10 p-4 text-sm font-semibold text-ink">
           <CircleAlert size={18} aria-hidden="true" />
           Create or select a voice profile before speaking.
