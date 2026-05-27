@@ -2,10 +2,27 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
 
-export default React.forwardRef(function VideoPreview({ webcamStream, audioUrl, isSpeaking }, ref) {
+export default React.forwardRef(function VideoPreview({
+  webcamStream,
+  audioUrl,
+  isSpeaking,
+  calibration = { xOffset: 0, yOffset: 0, scale: 1.0 },
+  isCalibrating = false
+}, ref) {
   const videoRef = React.useRef(null);
   const animationRef = React.useRef(null);
   const [modelStatus, setModelStatus] = React.useState("Fallback animation ready");
+
+  const calibrationRef = React.useRef(calibration);
+  const isCalibratingRef = React.useRef(isCalibrating);
+
+  React.useEffect(() => {
+    calibrationRef.current = calibration;
+  }, [calibration]);
+
+  React.useEffect(() => {
+    isCalibratingRef.current = isCalibrating;
+  }, [isCalibrating]);
 
   React.useEffect(() => {
     async function loadModel() {
@@ -51,12 +68,19 @@ export default React.forwardRef(function VideoPreview({ webcamStream, audioUrl, 
         context.fillText("Waiting for webcam", canvas.width / 2, canvas.height / 2);
       }
 
-      if (isSpeaking) {
-        const mouthOpen = 14 + Math.sin(timestamp / 80) * 8;
+      const drawMouth = isSpeaking || isCalibratingRef.current;
+      if (drawMouth) {
+        const mouthOpen = isSpeaking ? 14 + Math.sin(timestamp / 80) * 8 : 14;
+        const currentCalibration = calibrationRef.current;
+        const centerX = canvas.width / 2 + currentCalibration.xOffset;
+        const centerY = canvas.height * 0.63 + currentCalibration.yOffset;
+        const radiusX = 56 * currentCalibration.scale;
+        const radiusY = mouthOpen * currentCalibration.scale;
+
         context.save();
         context.fillStyle = "rgba(22, 32, 29, 0.82)";
         context.beginPath();
-        context.ellipse(canvas.width / 2, canvas.height * 0.63, 56, mouthOpen, 0, 0, Math.PI * 2);
+        context.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
         context.fill();
         context.restore();
       }
