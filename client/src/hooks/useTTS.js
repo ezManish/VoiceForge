@@ -1,5 +1,6 @@
 // Sends typed text to the local backend and returns playable cloned speech audio.
 import React from "react";
+import { decryptStore } from "../utils/crypto.js";
 export default function useTTS() {
   const [status, setStatus] = React.useState("idle");
   const [error, setError] = React.useState("");
@@ -14,7 +15,7 @@ export default function useTTS() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-ElevenLabs-Api-Key": localStorage.getItem("voiceforge:elevenlabsApiKey") || ""
+          "X-ElevenLabs-Api-Key": decryptStore(localStorage.getItem("voiceforge:elevenlabsApiKey") || "")
         },
         body: JSON.stringify({ text, voice_id: voiceId })
       });

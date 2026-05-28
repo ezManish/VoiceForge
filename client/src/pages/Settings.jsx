@@ -5,6 +5,7 @@ import {
   deleteVoiceProfile,
   getSavedProfiles,
 } from "../hooks/useVoiceClone.js";
+import { encryptStore, decryptStore } from "../utils/crypto.js";
 
 function AudioPlayback({ blob }) {
   const [audioUrl, setAudioUrl] = React.useState(null);
@@ -28,7 +29,7 @@ function AudioPlayback({ blob }) {
 
 export default function Settings() {
   const [apiKey, setApiKey] = React.useState(
-    localStorage.getItem("voiceforge:elevenlabsApiKey") || "",
+    decryptStore(localStorage.getItem("voiceforge:elevenlabsApiKey") || ""),
   );
   const [profiles, setProfiles] = React.useState([]);
   const [dbError, setDbError] = React.useState("");   // ← also missing (see `#2`
@@ -47,7 +48,7 @@ export default function Settings() {
   }, []);
 
   function saveApiKey() {
-    localStorage.setItem("voiceforge:elevenlabsApiKey", apiKey);
+    localStorage.setItem("voiceforge:elevenlabsApiKey", encryptStore(apiKey));
   }
 
   async function removeProfile(voiceId) {
