@@ -15,6 +15,12 @@ export default function Call() {
   const canvasRef = React.useRef(null);
   const localVideoRef = React.useRef(null);
   const [activeProfile, setActiveProfile] = React.useState(null);
+  const [language, setLanguage] = React.useState(() => {
+  return localStorage.getItem("voiceforge:language") || "English";
+});
+React.useEffect(() => {
+  localStorage.setItem("voiceforge:language", language);
+}, [language]);
   const [dbError, setDbError] = React.useState("");
   const { speak, status, error, audioUrl } = useTTS();
   const virtualCamera = useVirtualCamera(canvasRef);
@@ -119,7 +125,11 @@ export default function Call() {
   async function handleSpeak(text) {
     if (!activeProfile?.voice_id) return;
     try {
-      await speak({ text, voiceId: activeProfile.voice_id });
+      await speak({
+  text,
+  voiceId: activeProfile.voice_id,
+  language,
+});
     } catch (err) {
       console.error("TTS streaming error:", err);
     }
@@ -263,7 +273,25 @@ export default function Call() {
           </div>
         )}
       </section>
+      <section className="rounded-lg border border-ink/10 bg-white p-4 shadow-soft dark:border-border dark:bg-surface">
+  <label className="mb-2 block text-sm font-bold dark:text-neutral-100">
+    Output Language
+  </label>
 
+  <select
+    value={language}
+    onChange={(e) => setLanguage(e.target.value)}
+    className="w-full rounded-md border border-ink/15 bg-cloud p-3 dark:border-border dark:bg-black dark:text-neutral-100"
+  >
+    <option value="English">English</option>
+    <option value="Hindi">Hindi</option>
+    <option value="Spanish">Spanish</option>
+    <option value="French">French</option>
+    <option value="German">German</option>
+    <option value="Portuguese">Portuguese</option>
+    <option value="Japanese">Japanese</option>
+  </select>
+</section>
       <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr_0.9fr]">
         {/* Webcam panel */}
         <section className="rounded-lg border border-ink/10 bg-white p-5 shadow-soft dark:border-border dark:bg-surface dark:shadow-soft-dk">
