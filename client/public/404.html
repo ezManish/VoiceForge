@@ -85,7 +85,18 @@
         transition: opacity 0.15s ease;
       }
 
-      .btn:hover { opacity: 0.85; }
+      .btn:hover, 
+      .btn:focus-visible { 
+        opacity: 0.85; 
+        outline: 2px solid #000000; 
+        outline-offset: 3px; 
+      }
+
+
+      .btn:focus:not(:focus-visible) {
+        outline: none;
+      }
+
 
       @media (prefers-color-scheme: dark) {
         .btn { background: #ffffff; color: #16201d; }
