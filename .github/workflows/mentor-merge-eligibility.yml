@@ -54,11 +54,9 @@ jobs:
             // ─────────────────────────────────────────────────────────────
             const MENTORS = [
               'sabeenaviklar',
-              '1754riya',
               'Anushreebasics',
               'itsdakshjain',
               'snehkris',
-              'leonagoel',
               'joyprakashk',
               'rushi-k12'
             ];
