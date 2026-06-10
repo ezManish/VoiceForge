@@ -37,11 +37,11 @@ jobs:
             // ─────────────────────────────────────────────────────────────
             const mentorLabelMap = {
               'sabeenaviklar':  'mentor:sabeenaviklar',
-              '1754riya':       'mentor:1754riya',
               'Anushreebasics': 'mentor:Anushreebasics',
               'itsdakshjain':   'mentor:itsdakshjain',
               'snehkris':       'mentor:snehkris',
-              'leonagoel':      'mentor:leonagoel',
+              'Mrigakshi-Rathore':  'mentor:Mrigakshi-Rathore',
+              'vedhapprakashni':  'mentor:vedhapprakashni',
               'joyprakashk':    'mentor:joyprakashk',
               'rushi-k12':      'mentor:rushi-k12'
             };

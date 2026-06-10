@@ -174,7 +174,7 @@ export function QuickReplies({ onSelect }) {
               maxLength={120}
               placeholder="New reply..."
               autoFocus
-              className="bg-transparent text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500 w-28"
+              className="flex-1 min-w-[5rem] max-w-[10rem] bg-transparent text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
             />
             <button
               type="submit"
