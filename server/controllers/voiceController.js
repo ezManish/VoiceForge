@@ -3,8 +3,16 @@ import crypto from "crypto";
 
 const ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1";
 
-const STREAM_SECRET = process.env.STREAM_SECRET || crypto.randomBytes(32).toString("hex");
-const ENCRYPTION_KEY = crypto.createHash("sha256").update(STREAM_SECRET).digest();
+const STREAM_SECRET = process.env.STREAM_SECRET ?? (() => {
+  console.warn(
+    "[VoiceForge] STREAM_SECRET not set — using ephemeral key. " +
+    "All speech tokens will be invalidated on server restart. " +
+    "Set STREAM_SECRET in .env for stability."
+  );
+  return crypto.randomBytes(32).toString("hex");
+})();
+
+const ENCRYPTION_KEY = crypto.scryptSync(STREAM_SECRET, "voiceforge-stream-salt", 32);
 const IV_LENGTH = 12;
 const ALGORITHM = "aes-256-gcm";
 
@@ -164,22 +172,23 @@ export async function speak(request, response, next) {
   voice_settings
 } = request.body;
 
-    if (!getIsMock()) {
-      // Only require a real API key when not in mock mode.
-      requireApiKey(request);
-    }
+    const apiKey = getIsMock() ? null : requireApiKey(request);
 
     if (!text || !voiceId) {
       response.status(400).json({ error: "Both text and voice_id are required." });
       return;
     }
+    if (text.length > 500) {
+      response.status(400).json({ error: "Text too long; maximum 500 characters for streaming." });
+      return;
+    }
 
     const expiresAt = Date.now() + 60000;
-    const token = encryptToken({ text, voiceId, apiKey, expiresAt });
+    const token = encryptToken({ text, voiceId, apiKey, language_code, voice_settings, expiresAt });
 
     response.json({
       speechId: token,
-      audioUrl: `/api/voice/speak/stream/${token}`
+      audioUrl: `/api/voice/speak/stream?t=${token}`
     });
   } catch (error) {
     next(error);
@@ -188,8 +197,12 @@ export async function speak(request, response, next) {
 
 export async function streamSpeech(request, response, next) {
   try {
-    const { token } = request.params;
-    const { text, voiceId, apiKey } = decryptToken(token);
+    const token = request.query.t;
+    if (!token) {
+      response.status(400).json({ error: "Missing stream token." });
+      return;
+    }
+    const { text, voiceId, apiKey, language_code, voice_settings } = decryptToken(token);
 
     const elevenResponse = await fetch(`${ELEVENLABS_BASE_URL}/text-to-speech/${voiceId}/stream`, {
       method: "POST",
