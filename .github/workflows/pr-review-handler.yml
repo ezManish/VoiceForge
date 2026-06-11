@@ -122,7 +122,7 @@ jobs:
               return;
             }
             
-            const issue_number = pr.number;
+            issue_number = pr.number;
             const prHeadSha = pr.head?.sha || headSha;
             
             core.info(`Processing review state for PR #${issue_number} (SHA: ${headSha})`);
