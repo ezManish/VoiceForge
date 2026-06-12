@@ -175,17 +175,31 @@ export async function speak(request, response, next) {
 
     const apiKey = getIsMock() ? null : requireApiKey(request);
 
-    if (!text || !voiceId) {
+    // Fix (Issue 1): trim both fields before checking so whitespace-only
+    // strings ("   ") are treated the same as missing values and never reach
+    // encryptToken / the ElevenLabs URL interpolation.
+    const trimmedText = typeof text === "string" ? text.trim() : "";
+    const trimmedVoiceId = typeof voiceId === "string" ? voiceId.trim() : "";
+
+    if (!trimmedText && !trimmedVoiceId) {
       response.status(400).json({ error: "Both text and voice_id are required." });
       return;
     }
-    if (text.length > 500) {
+    if (!trimmedText) {
+      response.status(400).json({ error: "text is required and must not be blank." });
+      return;
+    }
+    if (!trimmedVoiceId) {
+      response.status(400).json({ error: "voice_id is required and must not be blank." });
+      return;
+    }
+    if (trimmedText.length > 500) {
       response.status(400).json({ error: "Text too long; maximum 500 characters for streaming." });
       return;
     }
 
     const expiresAt = Date.now() + 60000;
-    const token = encryptToken({ text, voiceId, apiKey, language_code, voice_settings, expiresAt });
+    const token = encryptToken({ text: trimmedText, voiceId: trimmedVoiceId, apiKey, language_code, voice_settings, expiresAt });
 
     response.json({
       speechId: token,
@@ -252,4 +266,3 @@ export function getStatus(request, response) {
     hasServerKey: Boolean(process.env.ELEVENLABS_API_KEY?.trim())
   });
 }
-
